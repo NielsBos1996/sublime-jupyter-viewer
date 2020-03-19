@@ -21,5 +21,7 @@ class JsontotextCommand(sublime_plugin.TextCommand):
             else:
                 cell_contents.append('\n\n## md\n\n' + cell_source)
         cell_contents = ''.join(cell_contents)
+        if len(cell_contents) > 2:
+            cell_contents = cell_contents[2:]
         self.view.replace(edit, sublime.Region(0, self.view.size()), cell_contents)
         self.view.set_syntax_file('Packages/Python/Python.sublime-syntax')

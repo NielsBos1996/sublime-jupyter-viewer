@@ -10,6 +10,15 @@ class TexttojsonCommand(sublime_plugin.TextCommand):
         self.main(edit)
 
     def main(self, edit):
+        if self.view.substr(sublime.Region(0, 1)) == "{":
+            return
+        if self.view.substr(sublime.Region(0, 2)) == '##':
+            self.view.insert(edit, 0, '\n\n')
+        fs = self.view.size()
+        if fs > 7:
+            if not self.view.substr(sublime.Region(fs-6, fs)) == '\n\n##\n\n':
+                if not self.view.substr(sublime.Region(fs-7, fs)) == '## md\n\n':
+                    self.view.insert(edit, fs, '\n\n##\n\n')
         normal_cells = self.view.find_all('\n\n##\n\n')
         markdown_cells = self.view.find_all('\n\n## md\n\n')
         all_cells = []
@@ -31,6 +40,7 @@ class TexttojsonCommand(sublime_plugin.TextCommand):
                 line_count = len(lines)
                 for idx, line in enumerate(lines):
                     line = line.replace('\\', '\\\\')
+                    line = line.replace('\"', '\\\"')
                     if idx == line_count - 1:
                         cell_source_final += '\"' + line + '\"'
                     else:
@@ -42,7 +52,7 @@ class TexttojsonCommand(sublime_plugin.TextCommand):
             cell_st = '{\n'
             cell_st += '"cell_type": "' + cell_type + '",\n'
             if cell_type == 'code':
-                cell_st += '"execution_count": 0,\n'
+                cell_st += '"execution_count": null,\n'
                 cell_st += '"outputs": [],\n'
             cell_st += '"metadata": {},\n'
             cell_st += '"source": [\n'
@@ -55,7 +65,7 @@ class TexttojsonCommand(sublime_plugin.TextCommand):
             all_cells_str += cell_st
         document = """{
  "cells": [
-          """ + all_cells_str + """
+  """ + all_cells_str + """
          ],
  "metadata": {
   "kernelspec": {
